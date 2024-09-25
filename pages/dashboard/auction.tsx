@@ -11,7 +11,7 @@ export default function Auction() {
     const router = useRouter();
     const { data: session, status } = useSession();
     const discordId = session?.discordId || null;
-    const { dhracmas, isLoading: dhracmasLoading } = useDhracmas(discordId);
+    const { dhracmas, loadingDhracmas } = useDhracmas(discordId);
     const { auctions: initialAuctions, auctionLoading, error, refetch } = useAuctions();
 
     const [auctions, setAuctions] = useState(initialAuctions);
@@ -36,17 +36,22 @@ export default function Auction() {
     useEffect(() => {
         const countdown = () => {
             const now = DateTime.now().setZone('UTC');
-            let updatedAuctions = auctions.map(auction => {
-                const endDate = DateTime.fromISO(auction.dateEnd).setZone('UTC');
-                const timeRemaining = endDate.diff(now);
+            const updatedAuctions = auctions.map(auction => {
+                const endDateString = auction.dateEnd; // Asegúrate de que esto sea una cadena
+                if (typeof endDateString === 'string') {
+                    const endDate = DateTime.fromISO(endDateString).setZone('UTC');
+                    const timeRemaining = endDate.diff(now);
 
-                if (timeRemaining > 0) {
-                    const days = Math.floor(timeRemaining.as('days'));
-                    const hours = Math.floor(timeRemaining.as('hours')) % 24;
-                    const minutes = Math.floor(timeRemaining.as('minutes')) % 60;
-                    auction.timeLeft = `${days}d ${hours}h ${minutes}m`;
+                    if (timeRemaining.as('milliseconds') > 0) {
+                        const days = Math.floor(timeRemaining.as('days'));
+                        const hours = Math.floor(timeRemaining.as('hours')) % 24;
+                        const minutes = Math.floor(timeRemaining.as('minutes')) % 60;
+                        auction.timeLeft = `${days}d ${hours}h ${minutes}m`;
+                    } else {
+                        auction.timeLeft = "Cerrada";
+                    }
                 } else {
-                    auction.timeLeft = "Cerrada";
+                    auction.timeLeft = "Cerrada"; // O maneja el caso donde dateEnd no es un string
                 }
 
                 return auction;
@@ -54,7 +59,8 @@ export default function Auction() {
 
             setAuctions(updatedAuctions);
         };
-
+    
+        countdown();
         const interval = setInterval(countdown, 1000);
         return () => clearInterval(interval);
     }, [auctions]);
@@ -71,7 +77,7 @@ export default function Auction() {
         return <p>Inicia sesión para ver esta página.</p>;
     }
 
-    if (dhracmasLoading) {
+    if (loadingDhracmas) {
         return <p>Cargando Dhracmas...</p>;
     }
 

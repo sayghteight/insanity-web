@@ -1,5 +1,5 @@
 import { DashboardComponent } from '@/components/DashboardComponent';
-import { AlertTriangle, Coins, Users, Calendar } from 'lucide-react';
+import { LucideProps, AlertTriangle, Coins, Users, Calendar } from 'lucide-react';
 import { useDhracmas } from '@/services/core/getDhracmas';
 import { useSession } from 'next-auth/react';
 import { useMembersCount } from '@/services/core/membersCount';
@@ -8,7 +8,7 @@ export default function HomePage() {
     const { data: session, status } = useSession();
     const discordId = session?.discordId || null;  // Siempre definir discordId
 
-    const { dhracmas, isLoading: dhracmasLoading } = useDhracmas(discordId);  // Verificar el estado de carga
+    const { dhracmas, loadingDhracmas: dhracmasLoading } = useDhracmas(discordId);  // Verificar el estado de carga
     const { countMembers } = useMembersCount();
 
     // Si la sesión está cargando, mostrar un mensaje
@@ -40,15 +40,16 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Validamos que dhracmas exista antes de mostrarlo */}
                 <Card title="Tus Dhracmas" icon={Coins} value={dhracmas ? dhracmas : 'N/A'} />
-                <Card title="Miembros totales" icon={Users} value={countMembers} />
+                <Card title="Miembros totales" icon={Users} value={countMembers ?? 0} />
                 <Card title="Eventos" icon={Calendar} value="0" />
             </div>
         </DashboardComponent>
     );
 }
 
-function Card({ title, icon: Icon, value }) {
-  return (
+
+function Card({ title, icon: Icon, value }: { title: string; icon: React.ComponentType<LucideProps>; value: string | number; }) {
+    return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-semibold">{title}</h3>

@@ -1,25 +1,27 @@
 import { useEffect, useState } from 'react';
 import { getInsanityCoins } from '@/services/api/api.service';
 
-export function useDhracmas(userId: string) {
+// Ejemplo de uso de useDhracmas
+export const useDhracmas = (discordId: string | null) => {
   const [dhracmas, setDhracmas] = useState<string>('');
   const [loadingDhracmas, setLoadingDhracmas] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchDhracmas = async () => {
+    if (discordId) {
+      // Lógica para obtener Dhracmas
       setLoadingDhracmas(true);
-      try {
-        const data = await getInsanityCoins(userId);
+      // Supongamos que fetchDhracmas es una función que obtiene los Dhracmas
+      getInsanityCoins(discordId).then(data => {
         setDhracmas(data);
-      } catch (error) {
-        console.error('Error fetching dhracmas:', error);
-      } finally {
         setLoadingDhracmas(false);
-      }
-    };
+      });
+    } else {
+      setLoadingDhracmas(false);
+    }
+  }, [discordId]);
 
-    fetchDhracmas();
-  }, [userId]);
+  return { dhracmas, loadingDhracmas }; // Asegúrate de retornar la propiedad correcta
+};
 
-  return { dhracmas, loadingDhracmas };
-}
+
+

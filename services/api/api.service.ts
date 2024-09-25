@@ -12,7 +12,7 @@ const apiClient = axios.create({
 });
 
 // Get insanity coins for user
-export const getInsanityCoins = async (userId: number) => {
+export const getInsanityCoins = async (userId: string) => {
   try {
     const response = await apiClient.get(`/users/${userId}/getData`, {
       params: { data: 'dhracmas' }
