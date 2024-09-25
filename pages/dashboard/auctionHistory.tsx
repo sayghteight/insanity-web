@@ -1,6 +1,6 @@
 import { DashboardComponent } from '@/components/DashboardComponent';
 import { AlertTriangle, Coins, Clock, ChevronLeft, ArrowUpCircle } from 'lucide-react';
-import { useState } from 'react';
+import { AwaitedReactNode, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useDhracmas } from '@/services/core/getDhracmas';
 import { useSession } from 'next-auth/react';
@@ -12,12 +12,16 @@ export default function AuctionHistory() {
     const router = useRouter();
     const { title, id } = router.query;
 
+    if (!id) {
+        return <p>Error: ID de subasta no proporcionado.</p>;
+    }
+
     const { data: session, status } = useSession();
     const discordId = session?.discordId || null;
 
     const auctionIdString = Array.isArray(id) ? id[0] : id;
 
-    const { dhracmas, isLoading: dhracmasLoading } = useDhracmas(discordId);
+    const { dhracmas, loadingDhracmas: dhracmasLoading } = useDhracmas(discordId);
     const { auctionHistory: initialAuctionHistory, auctionHistoryLoading, errorAuction } = useAuctionHistory(auctionIdString);
     const { handleUpdateBid, isLoading: bidLoading, error: bidError } = useUpdateBid();
     
@@ -27,7 +31,7 @@ export default function AuctionHistory() {
         return <p>Cargando sesión...</p>;
     }
 
-    if (!session) {
+    if (!session?.discordId) {
         return <p>Inicia sesión para ver esta página.</p>;
     }
 
@@ -52,7 +56,7 @@ export default function AuctionHistory() {
         },
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
 
         const minBid = auctionItem.currentBid === 0 ? auctionItem.startBid + 50 : auctionItem.currentBid + 50;
@@ -70,11 +74,18 @@ export default function AuctionHistory() {
             return;
         }
 
-        if (bidAmount > dhracmas) {
+        const dhracmasNumber =  Number(dhracmas);
+
+        if (bidAmount > dhracmasNumber) {
             alert("No tienes suficientes Dhracmas para realizar esta puja.");
             return;
         }
 
+        if (!session.discordId) {
+            console.error("User ID is not defined in session.");
+            return; // Maneja el error según sea necesario
+        }
+        
         await handleUpdateBid(auctionIdString, bidAmount, session.discordId); // Asumiendo que `userId` está en `session`
         setBidAmount(0); // Reiniciar el valor del input después de la puja
 
@@ -140,18 +151,16 @@ export default function AuctionHistory() {
                                         {bidError && <p className="text-red-500">{bidError}</p>}
                                     </form>
                                 ) : (
+                                    initialAuctionHistory && initialAuctionHistory.bids.length > 0 && (
                                     <div className="bg-yellow-500 text-black p-4 rounded-lg mb-6 flex items-center">
-                                    <AlertTriangle className="mr-2" />
+                                        <AlertTriangle className="mr-2" />
                                         La subasta ha terminado. El mayor pujante fue {initialAuctionHistory.bids[initialAuctionHistory.bids.length - 1]?.auctionUser?.username || "N/A"}. 
                                         Por favor, contacta a un oficial para obtener el objeto.
                                     </div>
+                                    )
                                 )}
                                 <div className="space-y-2">
-                                    <p><strong>Mayor pujante:</strong> {
-                                        initialAuctionHistory.bids.length > 0
-                                            ? initialAuctionHistory.bids[initialAuctionHistory.bids.length - 1].auctionUser.username
-                                            : "N/A"
-                                    }</p>
+                                    <p><strong>Mayor pujante:</strong></p>
                                     <p><strong>Puja inicial:</strong> {auctionItem.startBid} Dhracmas</p>
                                     <p><strong>Incremento mínimo:</strong> 50 Dhracmas</p>
                                 </div>
@@ -161,12 +170,16 @@ export default function AuctionHistory() {
                             <div className="bg-gray-800 p-4 rounded-lg">
                                 <h3 className="text-xl font-semibold mb-2">Historial de pujas</h3>
                                 <ul className="space-y-2">
-                                    {initialAuctionHistory.bids.map((bid, index) => (
-                                        <li key={index} className="flex justify-between">
-                                            <span>{bid.auctionUser.username}</span>
-                                            <span>{bid.bidAmount} Dhracmas</span>
-                                        </li>
-                                    ))}
+                                    {
+                                    initialAuctionHistory && initialAuctionHistory.bids.length > 0 && (
+                                            initialAuctionHistory.bids.map((bid: { auctionUser: { username: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; }; bidAmount: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; }, index: Key | null | undefined) => (
+                                                <li key={index} className="flex justify-between">
+                                                    <span>{bid.auctionUser.username}</span>
+                                                    <span>{bid.bidAmount} Dhracmas</span>
+                                                </li>
+                                            )
+                                        )
+                                    )}
                                 </ul>
                             </div>
                         </div>

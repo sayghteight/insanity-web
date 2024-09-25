@@ -1,4 +1,5 @@
 export interface Auction {
+    bids: any;
     startBid: ReactNode;
     currentBid: any;
     timeLeft: string;

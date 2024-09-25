@@ -6,7 +6,7 @@ export function useUpdateBid() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleUpdateBid = async (auctionId: string, bidAmount: number, userId: number) => {
+  const handleUpdateBid = async (auctionId: string, bidAmount: number, userId: string) => {
     setIsLoading(true);
     try {
       await updateBid(auctionId, bidAmount, userId);
