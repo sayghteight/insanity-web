@@ -6,14 +6,14 @@ import { checkUserRole } from '@/services/utils/roleChecker';
 export default NextAuth({
   providers: [
     DiscordProvider({
-      clientId: process.env.DISCORD_CLIENT_ID,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET,
+      clientId: process.env.DISCORD_CLIENT_ID || '',
+      clientSecret: process.env.DISCORD_CLIENT_SECRET || '',
       authorization: { params: { scope: 'identify guilds' } },
     }),
   ],
   callbacks: {
-    async jwt({ token, account, profile }) {
-        if (account) {
+    async jwt({ token, account, profile }) {    
+      if (account && profile) {  // Verifica si profile está definido
           token.accessToken = account.access_token;
           token.discordId = profile.id;
           token.username = profile.username;
@@ -41,7 +41,7 @@ export default NextAuth({
               
               token.roles = memberData.roles;
 
-              const hasRequiredRole = token.roles.includes('1179881354167595099');
+              const hasRequiredRole = (token.roles || []).includes('1179881354167595099');
               if (!hasRequiredRole) {
                 token.hasRequiredRole = false;
               } else {
@@ -65,8 +65,17 @@ export default NextAuth({
       session.roles = token.roles;
       session.hasRequiredRole = token.hasRequiredRole;
   
-      const roleCheck = checkUserRole(token.roles);
+      const roleCheck = checkUserRole(token.roles || []);
 
+      // Asegurarse de que discordId y username no sean undefined
+      if (!token.discordId || !token.username) {
+        throw new Error("discordId and username must be defined");
+      }
+
+      if (!roleCheck.roleName) {
+        throw new Error("roleName must be defined");
+      }
+      
       try {
           const response = await loginUser(token.discordId, token.username, roleCheck.roleName);
       } catch (error) {

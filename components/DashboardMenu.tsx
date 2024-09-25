@@ -4,12 +4,17 @@ import { useRouter } from 'next/router';
 import { signOut } from 'next-auth/react';
 import { checkUserRole } from '@/services/utils/roleChecker';
 import { useDhracmas } from '@/services/core/getDhracmas';
-import { Home, Gavel, Users, Calendar, AlertTriangle, Coins, LogOut } from 'lucide-react'
+import { Home, Gavel, Users, Calendar, AlertTriangle, Coins, LogOut } from 'lucide-react';
+import { Session } from 'next-auth'; // Importar el tipo Session
 
-export function DashboardMenu({ session }) {
+interface DashboardMenuProps {
+  session: Session; // Definir el tipo de session
+}
+
+export function DashboardMenu({ session }: DashboardMenuProps) {
   const router = useRouter();
 
-  const roleCheck = checkUserRole(session.roles);
+  const roleCheck = checkUserRole(session.roles ?? []);
 
   const pages = {
     home: { title: 'Home', icon: Home, route: '/dashboard/home' },
@@ -51,27 +56,27 @@ export function DashboardMenu({ session }) {
       </nav>
 
       {/* Footer */}
-        <div className="mt-auto pt-4 border-t border-gray-700">
-          <div className="flex items-center mb-4">
-            <img
-              src={`${session.user?.image}?height=40&width=40`}
-              alt={`${session.user?.name} avatar`}
-              className="w-10 h-10 rounded-full mr-3"
-            />
-            <div>
-              <p className="font-semibold">{session.user?.name}</p>
-              <p className="text-sm text-gray-400">{roleCheck.roleName}</p>
-            </div>
+      <div className="mt-auto pt-4 border-t border-gray-700">
+        <div className="flex items-center mb-4">
+          <img
+            src={`${session.user?.image}?height=40&width=40`}
+            alt={`${session.user?.name} avatar`}
+            className="w-10 h-10 rounded-full mr-3"
+          />
+          <div>
+            <p className="font-semibold">{session.user?.name}</p>
+            <p className="text-sm text-gray-400">{roleCheck.roleName}</p>
           </div>
-          <div className="flex items-center justify-between mb-4">
-            <Coins className="text-yellow-500" />
-            <span className="text-yellow-500 font-semibold">{dhracmas.dhracmas} Dhracmas</span>
-          </div>
-          <button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center" onClick={() => signOut()}>
-            <LogOut className="mr-2" size={18} />
-            Cerrar Sesión
-          </button>
         </div>
+        <div className="flex items-center justify-between mb-4">
+          <Coins className="text-yellow-500" />
+          <span className="text-yellow-500 font-semibold">{dhracmas.dhracmas} Dhracmas</span>
+        </div>
+        <button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center" onClick={() => signOut()}>
+          <LogOut className="mr-2" size={18} />
+          Cerrar Sesión
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import { DashboardMenu } from './DashboardMenu'; // Importa el menú
 
-export function DashboardComponent({ children }) { // children será el contenido de cada página
+interface DashboardComponentProps {
+  children: ReactNode;
+}
+
+export function DashboardComponent({ children }: DashboardComponentProps) { // children será el contenido de cada página
   const router = useRouter();
   const { data: session, status } = useSession();
 
@@ -23,7 +27,7 @@ export function DashboardComponent({ children }) { // children será el contenid
 
       {/* Main content */}
       <div className="flex-1 p-8">
-      {children}
+        {children}
       </div>
     </div>
   );
