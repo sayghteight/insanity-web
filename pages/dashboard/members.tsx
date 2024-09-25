@@ -2,7 +2,7 @@ import { DashboardComponent } from '@/components/DashboardComponent';
 import { Home, Gavel, Eye, Users, Calendar, AlertTriangle, Coins, LogOut, Search, Edit, Trash2 } from 'lucide-react'
 import { useDhracmas } from '@/services/core/getDhracmas';
 import { useSession } from 'next-auth/react';
-import { useState } from 'react'
+import { AwaitedReactNode, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useState } from 'react'
 import { useMembersCount } from '@/services/core/membersCount';
 import { useUsers } from '@/services/core/getMembers';
 
@@ -27,11 +27,12 @@ export default function Member() {
     }
 
     // Filtrar los miembros según el término de búsqueda
-    const filteredMembers = initialListUsers?.filter(member =>
-        member.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.roles.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [];
-
+    const filteredMembers = Array.isArray(initialListUsers) ? 
+        initialListUsers.filter((member: { username: string; roles: string; }) =>
+            member.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            member.roles.toLowerCase().includes(searchTerm.toLowerCase())
+        ) : [];
+    
     return (
         <DashboardComponent>
         <div className="flex-1 p-8 overflow-auto">
@@ -66,7 +67,7 @@ export default function Member() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredMembers.map((member) => (
+                        {filteredMembers.map((member: { id: Key | null | undefined; username: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; roles: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; dhracmas: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; }) => (
                         <tr key={member.id} className="border-b border-gray-700">
                             <td className="p-3">{member.username}</td>
                             <td className="p-3">{member.roles}</td>

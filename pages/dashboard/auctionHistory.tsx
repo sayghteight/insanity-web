@@ -22,7 +22,7 @@ export default function AuctionHistory() {
     const auctionIdString = Array.isArray(id) ? id[0] : id;
 
     const { dhracmas, loadingDhracmas: dhracmasLoading } = useDhracmas(discordId);
-    const { auctionHistory: initialAuctionHistory, auctionHistoryLoading, errorAuction } = useAuctionHistory(auctionIdString);
+    const { auctionHistory, auctionHistoryLoading, errorAuction } = useAuctionHistory(auctionIdString);
     const { handleUpdateBid, isLoading: bidLoading, error: bidError } = useUpdateBid();
     
     const [bidAmount, setBidAmount] = useState(0);
@@ -47,14 +47,18 @@ export default function AuctionHistory() {
         return <p>Error: {errorAuction}</p>;
     }
 
-    const { auctionItem } = initialAuctionHistory || {
-        auctionItem: {
+    // Asegúrate de que auctionHistory no sea null y tiene la estructura esperada
+    const auctionItem = auctionHistory && auctionHistory.auctionItem 
+        ? auctionHistory.auctionItem 
+        : {
             title: "Título no disponible",
             currentBid: 0,
             startBid: 0,
             dateEnd: "N/A",
-        },
-    };
+        };
+
+    // Verifica si hay pujas
+    const hasBids = auctionHistory && auctionHistory.bids && auctionHistory.bids.length > 0;
 
     const handleSubmit = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
@@ -151,12 +155,12 @@ export default function AuctionHistory() {
                                         {bidError && <p className="text-red-500">{bidError}</p>}
                                     </form>
                                 ) : (
-                                    initialAuctionHistory && initialAuctionHistory.bids.length > 0 && (
-                                    <div className="bg-yellow-500 text-black p-4 rounded-lg mb-6 flex items-center">
-                                        <AlertTriangle className="mr-2" />
-                                        La subasta ha terminado. El mayor pujante fue {initialAuctionHistory.bids[initialAuctionHistory.bids.length - 1]?.auctionUser?.username || "N/A"}. 
-                                        Por favor, contacta a un oficial para obtener el objeto.
-                                    </div>
+                                    hasBids && (
+                                        <div className="bg-yellow-500 text-black p-4 rounded-lg mb-6 flex items-center">
+                                            <AlertTriangle className="mr-2" />
+                                            La subasta ha terminado. El mayor pujante fue {auctionHistory.bids[auctionHistory.bids.length - 1]?.auctionUser?.username || "N/A"}. 
+                                            Por favor, contacta a un oficial para obtener el objeto.
+                                        </div>
                                     )
                                 )}
                                 <div className="space-y-2">
@@ -170,16 +174,12 @@ export default function AuctionHistory() {
                             <div className="bg-gray-800 p-4 rounded-lg">
                                 <h3 className="text-xl font-semibold mb-2">Historial de pujas</h3>
                                 <ul className="space-y-2">
-                                    {
-                                    initialAuctionHistory && initialAuctionHistory.bids.length > 0 && (
-                                            initialAuctionHistory.bids.map((bid: { auctionUser: { username: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; }; bidAmount: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; }, index: Key | null | undefined) => (
-                                                <li key={index} className="flex justify-between">
-                                                    <span>{bid.auctionUser.username}</span>
-                                                    <span>{bid.bidAmount} Dhracmas</span>
-                                                </li>
-                                            )
-                                        )
-                                    )}
+                                    {hasBids && auctionHistory.bids.map((bid: { auctionUser: { username: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; }; bidAmount: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; }, index: Key | null | undefined) => (
+                                        <li key={index} className="flex justify-between">
+                                            <span>{bid.auctionUser.username}</span>
+                                            <span>{bid.bidAmount} Dhracmas</span>
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                         </div>

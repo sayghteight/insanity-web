@@ -48,7 +48,7 @@ export const getClanData = async () => {
   }
 };
 
-export const updateBid = async (auctionId: string, bidAmount: number, userId: number) => {
+export const updateBid = async (auctionId: string, bidAmount: number, userId: string) => {
   try {
     const response = await apiClient.put(`/auction/${auctionId}/bid`, {
       newBidAmount: bidAmount,

@@ -1,4 +1,7 @@
+import { ReactNode } from "react";
+
 export interface Auction {
+    auctionItem: any;
     bids: any;
     startBid: ReactNode;
     currentBid: any;
