@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Auction } from '@/services/types/Auction'; // Ajusta la ruta según tu estructura de carpetas
+import { Auction } from '../types/Auction';
 
 const API_URL = 'https://api.wow-cms.com';
 
